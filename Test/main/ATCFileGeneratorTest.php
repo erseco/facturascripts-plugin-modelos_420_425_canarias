@@ -278,10 +278,21 @@ class ATCFileGeneratorTest extends TestCase
             // Intentar decodificar
             try {
                 $xml = ATCFileGenerator::decode($content);
-                $this->assertStringContainsString('<?xml', $xml, 'Decoded content should be XML: ' . basename($fixturePath));
-                $this->assertStringContainsString('DECLARACION', $xml, 'XML should contain DECLARACION element: ' . basename($fixturePath));
+                $this->assertStringContainsString(
+                    '<?xml',
+                    $xml,
+                    'Decoded content should be XML: ' . basename($fixturePath)
+                );
+                $this->assertStringContainsString(
+                    'DECLARACION',
+                    $xml,
+                    'XML should contain DECLARACION element: ' . basename($fixturePath)
+                );
             } catch (\Exception $e) {
-                $this->fail('Fixture file should be valid .dec format: ' . basename($fixturePath) . ' - ' . $e->getMessage());
+                $this->fail(
+                    'Fixture file should be valid .dec format: ' . basename($fixturePath)
+                    . ' - ' . $e->getMessage()
+                );
             }
         }
     }
@@ -368,5 +379,4 @@ class ATCFileGeneratorTest extends TestCase
             'Default format should be DEC'
         );
     }
-
 }
