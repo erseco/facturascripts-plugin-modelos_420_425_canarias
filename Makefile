@@ -115,6 +115,7 @@ test: check-docker upd
 	@echo "Running unit tests..."
 	@echo ""
 	@docker compose exec facturascripts sh -c 'cd /var/www/html && echo "→ Installing PHPUnit if needed..." && if [ ! -f vendor/bin/phpunit ]; then php84 /usr/local/bin/composer require --dev phpunit/phpunit --no-interaction; fi'
+	@docker compose exec --user root facturascripts sh -c 'cd /var/www/html && chown -R nobody:nobody Test 2>/dev/null || true'
 	@docker compose exec facturascripts sh -c 'cd /var/www/html && echo "→ Setting up test environment..." && mkdir -p Test/Plugins && cp -r Plugins/Modelos420_425_Canarias/Test/main/* Test/Plugins/ 2>/dev/null || true && cp Plugins/Modelos420_425_Canarias/Test/bootstrap.php Test/bootstrap.php 2>/dev/null || true && cp Plugins/Modelos420_425_Canarias/Test/install-plugins.php Test/install-plugins.php 2>/dev/null || true'
 	@docker compose exec facturascripts sh -c 'cd /var/www/html && test -f Test/Plugins/install-plugins.txt || (echo "❌ Error: No tests found in Test/main/" && exit 1)'
 	@docker compose exec facturascripts sh -c 'cd /var/www/html && echo "→ Installing test plugins..." && php84 Test/install-plugins.php'

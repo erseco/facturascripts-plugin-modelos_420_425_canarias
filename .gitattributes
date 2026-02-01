@@ -13,6 +13,7 @@
 
 # Documentation and examples
 /CLAUDE.md              export-ignore
+/doc/                   export-ignore
 /examples/              export-ignore
 
 # Reference repository (cloned for development)

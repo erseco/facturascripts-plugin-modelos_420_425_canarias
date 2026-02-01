@@ -46,6 +46,24 @@ Este plugin proporciona:
 2. Seleccionar el ejercicio
 3. Se mostrará el resumen anual de IGIC devengado y deducible
 
+## Presentación Telemática
+
+El plugin genera el fichero `.dec` necesario para la presentación telemática en la sede electrónica de la Agencia Tributaria Canaria.
+
+### Generar fichero .dec
+
+1. Ir a **Informes > Modelo 420**
+2. Seleccionar el período y pulsar "Calcular"
+3. Pulsar "Guardar" para crear la regularización
+4. Pulsar **"Descargar fichero"** para obtener el `.dec`
+
+### Presentar en la ATC
+
+1. Accede a la [sede electrónica de la ATC](https://sede.gobiernodecanarias.org/tributos/)
+2. Selecciona **Modelo 420** > **Presentación telemática**
+3. Pulsa "Examinar" y selecciona el fichero `.dec` descargado
+4. Completa el proceso de presentación
+
 ## Instalación
 
 1. Descarga el ZIP desde [Releases](../../releases/latest)

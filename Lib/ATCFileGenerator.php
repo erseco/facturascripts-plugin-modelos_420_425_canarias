@@ -25,13 +25,20 @@ use FacturaScripts\Dinamic\Model\Empresa;
 use FacturaScripts\Plugins\Modelos420_425_Canarias\Model\ModeloFiscal;
 
 /**
- * Generador de ficheros ATC para la presentación telemática
- * en la Agencia Tributaria Canaria.
+ * Generador de ficheros para la Agencia Tributaria Canaria (ATC).
  *
- * El formato ATC es: XML → comprimido con zlib → codificado en uuencode
+ * Soporta dos formatos de fichero:
+ * - .atc: Fichero de intercambio para importar/exportar entre programas de ayuda
+ * - .dec: Fichero para presentación telemática en la Sede Electrónica
+ *
+ * Ambos formatos usan la misma codificación interna:
+ * XML (ISO-8859-1) → comprimido con zlib (gzdeflate nivel 9) → codificado en uuencode
  */
 class ATCFileGenerator
 {
+    public const FORMAT_DEC = 'dec';
+    public const FORMAT_ATC = 'atc';
+
     private const VERSION = '9.2.0';
 
     /** @var Empresa */
@@ -45,6 +52,9 @@ class ATCFileGenerator
 
     /** @var array */
     protected array $desgloseCompras = [];
+
+    /** @var string Formato de salida: 'dec' o 'atc' */
+    protected string $format = self::FORMAT_DEC;
 
     public function __construct(ModeloFiscal $modelo)
     {
@@ -72,7 +82,30 @@ class ATCFileGenerator
     }
 
     /**
-     * Genera el fichero ATC y lo devuelve como string.
+     * Establece el formato de salida.
+     *
+     * @param string $format Formato: FORMAT_DEC para presentación telemática,
+     *                       FORMAT_ATC para importación/exportación
+     */
+    public function setFormat(string $format): self
+    {
+        if (!in_array($format, [self::FORMAT_DEC, self::FORMAT_ATC], true)) {
+            throw new \InvalidArgumentException('Formato no válido. Use FORMAT_DEC o FORMAT_ATC');
+        }
+        $this->format = $format;
+        return $this;
+    }
+
+    /**
+     * Obtiene el formato de salida actual.
+     */
+    public function getFormat(): string
+    {
+        return $this->format;
+    }
+
+    /**
+     * Genera el fichero .dec y lo devuelve como string.
      */
     public function generate(): string
     {
@@ -82,7 +115,7 @@ class ATCFileGenerator
     }
 
     /**
-     * Genera el fichero ATC y lo guarda en disco.
+     * Genera el fichero .dec y lo guarda en disco.
      *
      * @return string Ruta del fichero generado
      */
@@ -102,13 +135,13 @@ class ATCFileGenerator
 
     /**
      * Genera el nombre del fichero según el formato de la ATC.
-     * Formato: NIF-timestamp.atc
+     * Formato: NIF-timestamp.dec o NIF-timestamp.atc
      */
     public function getFilename(): string
     {
         $nif = $this->empresa->cifnif ?? 'UNKNOWN';
         $timestamp = time() * 1000 + rand(0, 999);
-        return $nif . '-' . $timestamp . '.atc';
+        return $nif . '-' . $timestamp . '.' . $this->format;
     }
 
     /**
@@ -319,9 +352,9 @@ class ATCFileGenerator
     }
 
     /**
-     * Decodifica un fichero ATC existente y devuelve el XML.
+     * Decodifica un fichero .dec existente y devuelve el XML.
      *
-     * @param string $content Contenido del fichero ATC
+     * @param string $content Contenido del fichero .dec
      * @return string XML decodificado
      */
     public static function decode(string $content): string

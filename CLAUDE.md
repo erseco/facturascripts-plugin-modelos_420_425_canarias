@@ -36,6 +36,10 @@ Modelos420_425_Canarias/
 ├── Controller/
 │   ├── Modelo420.php          # Controlador autoliquidación trimestral
 │   └── Modelo425.php          # Controlador resumen anual
+├── doc/                       # Documentación normativa (no se incluye en releases)
+│   ├── NORMATIVA.md           # Enlaces a normativa oficial
+│   ├── Instrucciones_modelo_420.pdf  # Instrucciones oficiales ATC
+│   └── Manual_Modelo_420.pdf  # Manual del programa de ayuda ATC
 ├── Lib/
 │   └── IGICHelper.php         # Clase auxiliar para cálculos IGIC
 ├── View/
@@ -150,10 +154,51 @@ make test
 make package VERSION=2
 ```
 
+## Documentación Normativa
+
+La carpeta `doc/` contiene documentación de referencia sobre la normativa del IGIC (no se incluye en releases):
+
+- `doc/NORMATIVA.md` - Recopilación de enlaces a la normativa oficial
+- `doc/Instrucciones_modelo_420.pdf` - Instrucciones oficiales de la ATC para cumplimentar el modelo
+- `doc/Manual_Modelo_420.pdf` - Manual del programa de ayuda de la ATC
+
+### Formatos de fichero
+
+La ATC utiliza dos formatos de fichero diferentes:
+
+| Formato | Extensión | Uso |
+|---------|-----------|-----|
+| Intercambio | `.atc` | Importar/exportar entre programas de ayuda |
+| Presentación | `.dec` | Presentación telemática en la Sede Electrónica |
+
+**Este plugin puede generar ambos formatos:**
+
+```php
+use FacturaScripts\Plugins\Modelos420_425_Canarias\Lib\ATCFileGenerator;
+
+$generator = new ATCFileGenerator($modelo);
+
+// Generar .dec (presentación telemática) - por defecto
+$generator->setFormat(ATCFileGenerator::FORMAT_DEC);
+
+// Generar .atc (importación en programa de ayuda)
+$generator->setFormat(ATCFileGenerator::FORMAT_ATC);
+```
+
 ## Referencias
 
+### Enlaces Oficiales
 - **Agencia Tributaria Canaria:** https://www3.gobiernodecanarias.org/tributos/
 - **Modelo 420:** https://www3.gobiernodecanarias.org/tributos/atc/w/modelo-420
-- **FacturaScripts:** https://facturascripts.com/documentacion
-- **Ley 20/1991:** Régimen Económico Fiscal de Canarias
-- **Ley 4/2012:** Medidas administrativas y fiscales (IGIC)
+- **Versiones programa de ayuda:** https://www3.gobiernodecanarias.org/tributos/atc/w/modelo-420-versiones-programa-de-ayuda
+- **Sede Electrónica ATC:** https://sede.gobiernodecanarias.org/tributos/
+
+### Normativa Principal
+- **Ley 20/1991:** Modificación del Régimen Económico Fiscal de Canarias
+- **Ley 4/2012:** Medidas administrativas y fiscales (regulación actual del IGIC)
+- **Ley 19/1994:** Modificación del Régimen Económico y Fiscal de Canarias
+- **Real Decreto 2538/1994:** Normas de desarrollo del IGIC
+- **Decreto 268/2011:** Reglamento de gestión de tributos REF de Canarias
+
+### FacturaScripts
+- **Documentación:** https://facturascripts.com/documentacion
