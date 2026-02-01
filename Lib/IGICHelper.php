@@ -26,7 +26,6 @@ use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Asiento;
 use FacturaScripts\Dinamic\Model\Ejercicio;
 use FacturaScripts\Dinamic\Model\Partida;
-use FacturaScripts\Dinamic\Model\RegularizacionImpuesto;
 use FacturaScripts\Dinamic\Model\Subcuenta;
 
 /**
@@ -69,11 +68,11 @@ class IGICHelper
             return $desglose;
         }
 
-        $sql = "SELECT iva, recargo, SUM(neto) as neto, SUM(totaliva) as totaliva, SUM(totalrecargo) as totalrecargo"
-            . " FROM lineasivafactprov WHERE idfactura IN (SELECT idfactura FROM facturasprov"
-            . " WHERE fecha >= " . $this->db->var2str($fechaInicio)
-            . " AND fecha <= " . $this->db->var2str($fechaFin) . ")"
-            . " GROUP BY iva, recargo ORDER BY iva ASC, recargo ASC";
+        $sql = 'SELECT iva, recargo, SUM(neto) as neto, SUM(totaliva) as totaliva, SUM(totalrecargo) as totalrecargo'
+            . ' FROM lineasivafactprov WHERE idfactura IN (SELECT idfactura FROM facturasprov'
+            . ' WHERE fecha >= ' . $this->db->var2str($fechaInicio)
+            . ' AND fecha <= ' . $this->db->var2str($fechaFin) . ')'
+            . ' GROUP BY iva, recargo ORDER BY iva ASC, recargo ASC';
 
         $data = $this->db->select($sql);
         if ($data) {
@@ -107,11 +106,11 @@ class IGICHelper
             return $desglose;
         }
 
-        $sql = "SELECT iva, recargo, SUM(neto) as neto, SUM(totaliva) as totaliva, SUM(totalrecargo) as totalrecargo"
-            . " FROM lineasivafactcli WHERE idfactura IN (SELECT idfactura FROM facturascli"
-            . " WHERE fecha >= " . $this->db->var2str($fechaInicio)
-            . " AND fecha <= " . $this->db->var2str($fechaFin) . ")"
-            . " GROUP BY iva, recargo ORDER BY iva ASC, recargo ASC";
+        $sql = 'SELECT iva, recargo, SUM(neto) as neto, SUM(totaliva) as totaliva, SUM(totalrecargo) as totalrecargo'
+            . ' FROM lineasivafactcli WHERE idfactura IN (SELECT idfactura FROM facturascli'
+            . ' WHERE fecha >= ' . $this->db->var2str($fechaInicio)
+            . ' AND fecha <= ' . $this->db->var2str($fechaFin) . ')'
+            . ' GROUP BY iva, recargo ORDER BY iva ASC, recargo ASC';
 
         $data = $this->db->select($sql);
         if ($data) {
@@ -140,18 +139,18 @@ class IGICHelper
     public function hayFacturasSinAsiento(string $fechaInicio, string $fechaFin): bool
     {
         // Facturas de compra sin asiento
-        $sql = "SELECT COUNT(*) as num FROM facturasprov WHERE idasiento IS NULL"
-            . " AND fecha >= " . $this->db->var2str($fechaInicio)
-            . " AND fecha <= " . $this->db->var2str($fechaFin);
+        $sql = 'SELECT COUNT(*) as num FROM facturasprov WHERE idasiento IS NULL'
+            . ' AND fecha >= ' . $this->db->var2str($fechaInicio)
+            . ' AND fecha <= ' . $this->db->var2str($fechaFin);
         $data = $this->db->select($sql);
         if ($data && (int) $data[0]['num'] > 0) {
             return true;
         }
 
         // Facturas de venta sin asiento
-        $sql = "SELECT COUNT(*) as num FROM facturascli WHERE idasiento IS NULL"
-            . " AND fecha >= " . $this->db->var2str($fechaInicio)
-            . " AND fecha <= " . $this->db->var2str($fechaFin);
+        $sql = 'SELECT COUNT(*) as num FROM facturascli WHERE idasiento IS NULL'
+            . ' AND fecha >= ' . $this->db->var2str($fechaInicio)
+            . ' AND fecha <= ' . $this->db->var2str($fechaFin);
         $data = $this->db->select($sql);
         if ($data && (int) $data[0]['num'] > 0) {
             return true;
@@ -258,9 +257,9 @@ class IGICHelper
     /**
      * Calcula el resumen del IGIC para la previsualización del asiento.
      *
-     * @param string $fechaInicio    Fecha de inicio del período
-     * @param string $fechaFin       Fecha de fin del período
-     * @param string $codEjercicio   Código del ejercicio
+     * @param string $fechaInicio  Fecha de inicio del período
+     * @param string $fechaFin     Fecha de fin del período
+     * @param string $codEjercicio Código del ejercicio
      *
      * @return array Array con las partidas propuestas para el asiento
      */
@@ -337,11 +336,11 @@ class IGICHelper
     {
         $subcuentas = [];
 
-        $sql = "SELECT s.* FROM subcuentas s"
-            . " INNER JOIN cuentas c ON s.idcuenta = c.idcuenta"
-            . " INNER JOIN cuentasesp ce ON c.codcuentaesp = ce.codcuentaesp"
-            . " WHERE ce.codcuentaesp = " . $this->db->var2str($codCuentaEsp)
-            . " AND s.codejercicio = " . $this->db->var2str($codEjercicio);
+        $sql = 'SELECT s.* FROM subcuentas s'
+            . ' INNER JOIN cuentas c ON s.idcuenta = c.idcuenta'
+            . ' INNER JOIN cuentasesp ce ON c.codcuentaesp = ce.codcuentaesp'
+            . ' WHERE ce.codcuentaesp = ' . $this->db->var2str($codCuentaEsp)
+            . ' AND s.codejercicio = ' . $this->db->var2str($codEjercicio);
 
         $data = $this->db->select($sql);
         if ($data) {
@@ -381,12 +380,12 @@ class IGICHelper
     {
         $result = ['debe' => 0.0, 'haber' => 0.0, 'saldo' => 0.0];
 
-        $sql = "SELECT COALESCE(SUM(debe), 0) as debe, COALESCE(SUM(haber), 0) as haber"
-            . " FROM partidas p"
-            . " INNER JOIN asientos a ON p.idasiento = a.idasiento"
-            . " WHERE p.idsubcuenta = " . (int) $idsubcuenta
-            . " AND a.fecha >= " . $this->db->var2str($fechaInicio)
-            . " AND a.fecha <= " . $this->db->var2str($fechaFin);
+        $sql = 'SELECT COALESCE(SUM(debe), 0) as debe, COALESCE(SUM(haber), 0) as haber'
+            . ' FROM partidas p'
+            . ' INNER JOIN asientos a ON p.idasiento = a.idasiento'
+            . ' WHERE p.idsubcuenta = ' . (int) $idsubcuenta
+            . ' AND a.fecha >= ' . $this->db->var2str($fechaInicio)
+            . ' AND a.fecha <= ' . $this->db->var2str($fechaFin);
 
         $data = $this->db->select($sql);
         if ($data) {

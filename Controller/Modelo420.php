@@ -542,8 +542,9 @@ class Modelo420 extends Controller
     /**
      * Obtiene el ejercicio que contiene la fecha indicada.
      *
-     * @param string $fecha Fecha a buscar
-     * @param bool $onlyOpened Solo ejercicios abiertos
+     * @param string $fecha      Fecha a buscar
+     * @param bool   $onlyOpened Solo ejercicios abiertos
+     *
      * @return Ejercicio|false
      */
     protected function getEjercicioByFecha(string $fecha, bool $onlyOpened = false)

@@ -355,6 +355,7 @@ class ATCFileGenerator
      * Decodifica un fichero .dec existente y devuelve el XML.
      *
      * @param string $content Contenido del fichero .dec
+     *
      * @return string XML decodificado
      */
     public static function decode(string $content): string
