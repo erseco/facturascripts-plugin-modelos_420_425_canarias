@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view>
+    <columns>
+        <group name="data" numcolumns="12">
+            <column name="idmodelo" display="none" order="10">
+                <widget type="number" fieldname="idmodelo" readonly="true" />
+            </column>
+            <column name="tipo" numcolumns="2" order="20">
+                <widget type="text" fieldname="tipo" readonly="true" />
+            </column>
+            <column name="periodo" numcolumns="2" order="30">
+                <widget type="text" fieldname="periodo" readonly="true" />
+            </column>
+            <column name="ejercicio" numcolumns="2" order="40">
+                <widget type="text" fieldname="codejercicio" readonly="true" />
+            </column>
+            <column name="estado" numcolumns="2" order="50">
+                <widget type="text" fieldname="estado" />
+            </column>
+            <column name="numero-referencia-atc" numcolumns="4" order="60">
+                <widget type="text" fieldname="numeroreferencia" />
+            </column>
+        </group>
+        <group name="fechas" numcolumns="12">
+            <column name="desde" numcolumns="3" order="70">
+                <widget type="date" fieldname="fechainicio" readonly="true" />
+            </column>
+            <column name="hasta" numcolumns="3" order="80">
+                <widget type="date" fieldname="fechafin" readonly="true" />
+            </column>
+            <column name="fecha-presentacion" numcolumns="3" order="90">
+                <widget type="date" fieldname="fechapresentacion" />
+            </column>
+            <column name="fecha" numcolumns="3" order="100">
+                <widget type="datetime" fieldname="fechacreacion" readonly="true" />
+            </column>
+        </group>
+        <group name="importes" numcolumns="12">
+            <column name="total-devengado" numcolumns="4" order="110">
+                <widget type="money" fieldname="totaldevengado" readonly="true" />
+            </column>
+            <column name="total-deducible" numcolumns="4" order="120">
+                <widget type="money" fieldname="totaldeducible" readonly="true" />
+            </column>
+            <column name="resultado" numcolumns="4" order="130">
+                <widget type="money" fieldname="resultado" readonly="true" />
+            </column>
+        </group>
+        <group name="relaciones" numcolumns="12">
+            <column name="regularizacion" numcolumns="6" order="140">
+                <widget type="number" fieldname="idregiva" readonly="true" />
+            </column>
+            <column name="modelo-original" numcolumns="6" order="150">
+                <widget type="number" fieldname="idrectifica" readonly="true" />
+            </column>
+        </group>
+    </columns>
+</view>

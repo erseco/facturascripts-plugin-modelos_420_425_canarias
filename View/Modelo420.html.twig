@@ -1,0 +1,641 @@
+{% extends "Master/MenuBgTemplate.html.twig" %}
+
+{% block bodyHeaderOptions %}
+    {{ parent() }}
+    <div class="container-fluid mb-3">
+        <div class="row">
+            <div class="col-sm-6">
+                <h1 class="h3">
+                    <i class="fa-solid fa-file-invoice fa-fw"></i>
+                    {{ i18n.trans('modelo-420') }}
+                    {% if fsc.selectedRegiva %}
+                        <small class="text-muted">{{ fsc.selectedRegiva.periodo }}@{{ fsc.selectedRegiva.codejercicio }}</small>
+                    {% endif %}
+                </h1>
+                <p class="text-muted mb-0">{{ i18n.trans('modelo-420-descripcion') }}</p>
+            </div>
+            <div class="col-sm-6 text-end">
+                {% if fsc.selectedRegiva is null %}
+                    <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalNuevaRegiva">
+                        <i class="fa-solid fa-plus fa-fw"></i> {{ i18n.trans('nueva-regularizacion') }}
+                    </a>
+                {% else %}
+                    <a href="{{ fsc.url() }}" class="btn btn-outline-secondary">
+                        <i class="fa-solid fa-arrow-left fa-fw"></i> {{ i18n.trans('volver') }}
+                    </a>
+                    {% if fsc.modeloFiscal %}
+                        <a href="{{ fsc.url() }}?id={{ fsc.selectedRegiva.idregiva }}&download-atc=1" class="btn btn-primary">
+                            <i class="fa-solid fa-download fa-fw"></i> {{ i18n.trans('descargar-atc') }}
+                        </a>
+                    {% endif %}
+                    {% if fsc.allowDelete %}
+                        <a href="{{ fsc.url() }}?delete={{ fsc.selectedRegiva.idregiva }}" class="btn btn-danger"
+                           onclick="return confirm('{{ i18n.trans('confirmar-eliminar') }}');">
+                            <i class="fa-solid fa-trash fa-fw"></i> {{ i18n.trans('eliminar') }}
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    {{ parent() }}
+    <div class="container-fluid">
+        {% if fsc.selectedRegiva %}
+            {# Vista de detalle de una regularización existente #}
+            <div class="row">
+                <div class="col-lg-8">
+                    {# Información de la regularización #}
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <i class="fa-solid fa-info-circle fa-fw"></i> {{ i18n.trans('datos-regularizacion') }}
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <strong>{{ i18n.trans('ejercicio') }}:</strong><br>
+                                    {{ fsc.selectedRegiva.codejercicio }}
+                                </div>
+                                <div class="col-md-3">
+                                    <strong>{{ i18n.trans('periodo') }}:</strong><br>
+                                    {{ fsc.selectedRegiva.periodo }}
+                                </div>
+                                <div class="col-md-3">
+                                    <strong>{{ i18n.trans('desde') }}:</strong><br>
+                                    {{ fsc.selectedRegiva.fechainicio }}
+                                </div>
+                                <div class="col-md-3">
+                                    <strong>{{ i18n.trans('hasta') }}:</strong><br>
+                                    {{ fsc.selectedRegiva.fechafin }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Resumen IGIC #}
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <i class="fa-solid fa-calculator fa-fw"></i> {{ i18n.trans('igic-devengado') }}
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="text-end">{{ i18n.trans('base-imponible') }}</th>
+                                            <th class="text-end">{{ i18n.trans('tipo') }}</th>
+                                            <th class="text-end">{{ i18n.trans('cuota') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% set devengado = 0 %}
+                                        {% for item in fsc.desgloseIGICVentas() %}
+                                            {% set cuota = item.totaliva + item.totalrecargo %}
+                                            {% set devengado = devengado + cuota %}
+                                            <tr>
+                                                <td class="text-end">{{ money(item.neto) }}</td>
+                                                <td class="text-end">{{ item.iva }} %</td>
+                                                <td class="text-end">{{ money(cuota) }}</td>
+                                            </tr>
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="3" class="text-muted">{{ i18n.trans('sin-datos') }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot class="table-info">
+                                        <tr>
+                                            <td colspan="2" class="text-end"><strong>{{ i18n.trans('total') }}</strong></td>
+                                            <td class="text-end"><strong>{{ money(devengado) }}</strong></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <i class="fa-solid fa-receipt fa-fw"></i> {{ i18n.trans('igic-deducible') }}
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="text-end">{{ i18n.trans('base-imponible') }}</th>
+                                            <th class="text-end">{{ i18n.trans('tipo') }}</th>
+                                            <th class="text-end">{{ i18n.trans('cuota') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% set deducible = 0 %}
+                                        {% for item in fsc.desgloseIGICCompras() %}
+                                            {% set cuota = item.totaliva + item.totalrecargo %}
+                                            {% set deducible = deducible + cuota %}
+                                            <tr>
+                                                <td class="text-end">{{ money(item.neto) }}</td>
+                                                <td class="text-end">{{ item.iva }} %</td>
+                                                <td class="text-end">{{ money(cuota) }}</td>
+                                            </tr>
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="3" class="text-muted">{{ i18n.trans('sin-datos') }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot class="table-info">
+                                        <tr>
+                                            <td colspan="2" class="text-end"><strong>{{ i18n.trans('total') }}</strong></td>
+                                            <td class="text-end"><strong>{{ money(deducible) }}</strong></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Resultado #}
+                    <div class="card mb-3">
+                        <div class="card-body text-center">
+                            {% set resultado = devengado - deducible %}
+                            <h4>{{ i18n.trans('resultado') }}:</h4>
+                            <h2 class="{% if resultado >= 0 %}text-danger{% else %}text-success{% endif %}">
+                                {{ money(resultado) }}
+                            </h2>
+                            <p class="text-muted mb-0">
+                                {% if resultado > 0 %}
+                                    {{ i18n.trans('resultado-a-ingresar') }}
+                                {% elseif resultado < 0 %}
+                                    {{ i18n.trans('resultado-a-compensar') }}
+                                {% else %}
+                                    {{ i18n.trans('resultado-cero') }}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    {# Asiento generado #}
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <i class="fa-solid fa-book fa-fw"></i> {{ i18n.trans('asiento-generado') }}
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>{{ i18n.trans('subcuenta') }}</th>
+                                            <th class="text-end">{{ i18n.trans('debe') }}</th>
+                                            <th class="text-end">{{ i18n.trans('haber') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for partida in fsc.selectedRegiva.getPartidas() %}
+                                            <tr>
+                                                <td>
+                                                    <a href="{{ partida.url() }}" target="_blank">{{ partida.codsubcuenta }}</a>
+                                                </td>
+                                                <td class="text-end">{{ money(partida.debe) }}</td>
+                                                <td class="text-end">{{ money(partida.haber) }}</td>
+                                            </tr>
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="3" class="text-muted">{{ i18n.trans('sin-datos') }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer text-muted small">
+                            {{ i18n.trans('asiento-fecha') }}: {{ fsc.selectedRegiva.fechaasiento }}
+                        </div>
+                    </div>
+
+                    {# Estado del modelo fiscal #}
+                    {% if fsc.modeloFiscal %}
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <i class="fa-solid fa-file-circle-check fa-fw"></i> {{ i18n.trans('estado-modelo') }}
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-2">
+                                    <strong>{{ i18n.trans('estado') }}:</strong>
+                                    <span class="badge bg-{{ fsc.modeloFiscal.estadoClase() }}">
+                                        {{ fsc.modeloFiscal.estadoDescripcion() }}
+                                    </span>
+                                </p>
+                                {% if fsc.modeloFiscal.numeroreferencia %}
+                                    <p class="mb-2">
+                                        <strong>{{ i18n.trans('numero-referencia-atc') }}:</strong>
+                                        {{ fsc.modeloFiscal.numeroreferencia }}
+                                    </p>
+                                {% endif %}
+                                {% if fsc.modeloFiscal.fechapresentacion %}
+                                    <p class="mb-2">
+                                        <strong>{{ i18n.trans('fecha-presentacion') }}:</strong>
+                                        {{ fsc.modeloFiscal.fechapresentacion }}
+                                    </p>
+                                {% endif %}
+                                {% if fsc.modeloFiscal.esRectificativo() %}
+                                    <p class="mb-0">
+                                        <span class="badge bg-info">{{ i18n.trans('modelo-rectificativo') }}</span>
+                                    </p>
+                                {% endif %}
+                            </div>
+                            {% if fsc.modeloFiscal.estado == 'borrador' %}
+                                <div class="card-footer">
+                                    <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalMarcarPresentado">
+                                        <i class="fa-solid fa-check fa-fw"></i> {{ i18n.trans('marcar-presentado') }}
+                                    </button>
+                                </div>
+                            {% elseif fsc.modeloFiscal.estado == 'presentado' %}
+                                <div class="card-footer">
+                                    <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalCrearRectificativo">
+                                        <i class="fa-solid fa-edit fa-fw"></i> {{ i18n.trans('crear-rectificativo') }}
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Pestaña de facturas incluidas #}
+            {% if fsc.modeloFiscal %}
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <ul class="nav nav-tabs" id="tabsFacturas" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="facturasVentas-tab" data-bs-toggle="tab" data-bs-target="#facturasVentas" type="button" role="tab">
+                                    <i class="fa-solid fa-file-invoice fa-fw"></i> {{ i18n.trans('facturas-ventas') }}
+                                    <span class="badge bg-primary">{{ fsc.getFacturasClienteModelo()|length }}</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="facturasCompras-tab" data-bs-toggle="tab" data-bs-target="#facturasCompras" type="button" role="tab">
+                                    <i class="fa-solid fa-file-invoice-dollar fa-fw"></i> {{ i18n.trans('facturas-compras') }}
+                                    <span class="badge bg-success">{{ fsc.getFacturasProveedorModelo()|length }}</span>
+                                </button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="tabsFacturasContent">
+                            {# Facturas de ventas #}
+                            <div class="tab-pane fade show active" id="facturasVentas" role="tabpanel">
+                                <div class="card border-top-0 rounded-0 rounded-bottom">
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover table-sm mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>{{ i18n.trans('codigo') }}</th>
+                                                        <th>{{ i18n.trans('fecha') }}</th>
+                                                        <th>{{ i18n.trans('cifnif') }}</th>
+                                                        <th>{{ i18n.trans('nombre') }}</th>
+                                                        <th class="text-end">{{ i18n.trans('neto') }}</th>
+                                                        <th class="text-end">{{ i18n.trans('igic') }}</th>
+                                                        <th class="text-end">{{ i18n.trans('total') }}</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% set totalNetoVentas = 0 %}
+                                                    {% set totalIgicVentas = 0 %}
+                                                    {% for factura in fsc.getFacturasClienteModelo() %}
+                                                        {% set totalNetoVentas = totalNetoVentas + factura.neto %}
+                                                        {% set totalIgicVentas = totalIgicVentas + factura.totaligic %}
+                                                        <tr>
+                                                            <td><a href="{{ factura.urlFactura() }}" target="_blank">{{ factura.codigo }}</a></td>
+                                                            <td>{{ factura.fecha }}</td>
+                                                            <td>{{ factura.cifnif }}</td>
+                                                            <td>{{ factura.nombre|length > 30 ? factura.nombre|slice(0, 30) ~ '…' : factura.nombre }}</td>
+                                                            <td class="text-end">{{ money(factura.neto) }}</td>
+                                                            <td class="text-end">{{ money(factura.totaligic) }}</td>
+                                                            <td class="text-end">{{ money(factura.total()) }}</td>
+                                                        </tr>
+                                                    {% else %}
+                                                        <tr>
+                                                            <td colspan="7" class="text-muted text-center">{{ i18n.trans('sin-datos') }}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                                <tfoot class="table-primary">
+                                                    <tr>
+                                                        <th colspan="4">{{ i18n.trans('total') }}</th>
+                                                        <th class="text-end">{{ money(totalNetoVentas) }}</th>
+                                                        <th class="text-end">{{ money(totalIgicVentas) }}</th>
+                                                        <th class="text-end">{{ money(totalNetoVentas + totalIgicVentas) }}</th>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {# Facturas de compras #}
+                            <div class="tab-pane fade" id="facturasCompras" role="tabpanel">
+                                <div class="card border-top-0 rounded-0 rounded-bottom">
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover table-sm mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>{{ i18n.trans('codigo') }}</th>
+                                                        <th>{{ i18n.trans('fecha') }}</th>
+                                                        <th>{{ i18n.trans('cifnif') }}</th>
+                                                        <th>{{ i18n.trans('nombre') }}</th>
+                                                        <th class="text-end">{{ i18n.trans('neto') }}</th>
+                                                        <th class="text-end">{{ i18n.trans('igic') }}</th>
+                                                        <th class="text-end">{{ i18n.trans('total') }}</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% set totalNetoCompras = 0 %}
+                                                    {% set totalIgicCompras = 0 %}
+                                                    {% for factura in fsc.getFacturasProveedorModelo() %}
+                                                        {% set totalNetoCompras = totalNetoCompras + factura.neto %}
+                                                        {% set totalIgicCompras = totalIgicCompras + factura.totaligic %}
+                                                        <tr>
+                                                            <td><a href="{{ factura.urlFactura() }}" target="_blank">{{ factura.codigo }}</a></td>
+                                                            <td>{{ factura.fecha }}</td>
+                                                            <td>{{ factura.cifnif }}</td>
+                                                            <td>{{ factura.nombre|length > 30 ? factura.nombre|slice(0, 30) ~ '…' : factura.nombre }}</td>
+                                                            <td class="text-end">{{ money(factura.neto) }}</td>
+                                                            <td class="text-end">{{ money(factura.totaligic) }}</td>
+                                                            <td class="text-end">{{ money(factura.total()) }}</td>
+                                                        </tr>
+                                                    {% else %}
+                                                        <tr>
+                                                            <td colspan="7" class="text-muted text-center">{{ i18n.trans('sin-datos') }}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                                <tfoot class="table-success">
+                                                    <tr>
+                                                        <th colspan="4">{{ i18n.trans('total') }}</th>
+                                                        <th class="text-end">{{ money(totalNetoCompras) }}</th>
+                                                        <th class="text-end">{{ money(totalIgicCompras) }}</th>
+                                                        <th class="text-end">{{ money(totalNetoCompras + totalIgicCompras) }}</th>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            {# Lista de regularizaciones #}
+            <div class="card">
+                <div class="card-header">
+                    <i class="fa-solid fa-list fa-fw"></i> {{ i18n.trans('regularizaciones-igic') }}
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>{{ i18n.trans('ejercicio') }}</th>
+                                    <th>{{ i18n.trans('periodo') }}</th>
+                                    <th>{{ i18n.trans('desde') }}</th>
+                                    <th>{{ i18n.trans('hasta') }}</th>
+                                    <th class="text-end">{{ i18n.trans('fecha-asiento') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reg in fsc.allRegularizaciones() %}
+                                    <tr class="clickableRow" data-href="{{ reg.url() }}">
+                                        <td>{{ reg.codejercicio }}</td>
+                                        <td><a href="{{ reg.url() }}">{{ reg.periodo }}</a></td>
+                                        <td>{{ reg.fechainicio }}</td>
+                                        <td>{{ reg.fechafin }}</td>
+                                        <td class="text-end">{{ reg.fechaasiento }}</td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-muted text-center p-4">
+                                            <i class="fa-solid fa-info-circle fa-2x mb-2"></i><br>
+                                            {{ i18n.trans('sin-regularizaciones') }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    {# Modal para nueva regularización #}
+    <div class="modal fade" id="modalNuevaRegiva" tabindex="-1" aria-labelledby="modalNuevaRegivaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form name="formNuevaRegiva" action="{{ fsc.url() }}" method="post">
+                    <input type="hidden" name="proceso" value="">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalNuevaRegivaLabel">
+                            <i class="fa-solid fa-plus fa-fw"></i> {{ i18n.trans('nueva-regularizacion-420') }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <label for="periodo" class="col-sm-3 col-form-label">{{ i18n.trans('periodo') }}</label>
+                            <div class="col-sm-9">
+                                <select name="periodo" id="periodo" class="form-select" onchange="cambiarFechas()">
+                                    <option value="T1" {% if fsc.periodo == 'T1' %}selected{% endif %}>T1 - {{ i18n.trans('primer-trimestre') }}</option>
+                                    <option value="T2" {% if fsc.periodo == 'T2' %}selected{% endif %}>T2 - {{ i18n.trans('segundo-trimestre') }}</option>
+                                    <option value="T3" {% if fsc.periodo == 'T3' %}selected{% endif %}>T3 - {{ i18n.trans('tercer-trimestre') }}</option>
+                                    <option value="T4" {% if fsc.periodo == 'T4' %}selected{% endif %}>T4 - {{ i18n.trans('cuarto-trimestre') }}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="desde" class="col-sm-3 col-form-label">{{ i18n.trans('desde') }}</label>
+                            <div class="col-sm-9">
+                                <input type="date" name="desde" id="desde" class="form-control" value="{{ fsc.fechaDesde }}">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="hasta" class="col-sm-3 col-form-label">{{ i18n.trans('hasta') }}</label>
+                            <div class="col-sm-9">
+                                <input type="date" name="hasta" id="hasta" class="form-control" value="{{ fsc.fechaHasta }}">
+                            </div>
+                        </div>
+                        <div id="divPrevisualizacion">
+                            {# Aquí se cargará la previsualización #}
+                        </div>
+                        {% if fsc.auxRegiva is not empty %}
+                            <hr>
+                            <div class="alert alert-info">
+                                <i class="fa-solid fa-info-circle fa-fw"></i>
+                                {{ i18n.trans('previsualizacion-asiento') }}
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>{{ i18n.trans('subcuenta') }}</th>
+                                            <th class="text-end">{{ i18n.trans('debe') }}</th>
+                                            <th class="text-end">{{ i18n.trans('haber') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in fsc.auxRegiva %}
+                                            <tr>
+                                                <td>
+                                                    <a href="{{ item.subcuenta.url() }}" target="_blank">{{ item.subcuenta.codsubcuenta }}</a>
+                                                    {{ item.subcuenta.descripcion }}
+                                                </td>
+                                                <td class="text-end">{{ money(item.debe) }}</td>
+                                                <td class="text-end">{{ money(item.haber) }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ i18n.trans('cancelar') }}</button>
+                        {% if fsc.auxRegiva is empty %}
+                            <button type="button" class="btn btn-primary" onclick="completarRegiva()">
+                                <i class="fa-solid fa-calculator fa-fw"></i> {{ i18n.trans('calcular') }}
+                            </button>
+                        {% else %}
+                            <button type="button" class="btn btn-success" onclick="guardarRegiva()">
+                                <i class="fa-solid fa-save fa-fw"></i> {{ i18n.trans('guardar') }}
+                            </button>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function cambiarFechas() {
+            const periodo = document.getElementById('periodo').value;
+            const anyo = new Date().getFullYear();
+            let desde, hasta;
+
+            switch (periodo) {
+                case 'T1':
+                    desde = anyo + '-01-01';
+                    hasta = anyo + '-03-31';
+                    break;
+                case 'T2':
+                    desde = anyo + '-04-01';
+                    hasta = anyo + '-06-30';
+                    break;
+                case 'T3':
+                    desde = anyo + '-07-01';
+                    hasta = anyo + '-09-30';
+                    break;
+                case 'T4':
+                    desde = anyo + '-10-01';
+                    hasta = anyo + '-12-31';
+                    break;
+            }
+
+            document.getElementById('desde').value = desde;
+            document.getElementById('hasta').value = hasta;
+        }
+
+        function completarRegiva() {
+            document.querySelector('input[name="proceso"]').value = 'comprobar';
+            document.forms['formNuevaRegiva'].submit();
+        }
+
+        function guardarRegiva() {
+            document.querySelector('input[name="proceso"]').value = 'guardar';
+            document.forms['formNuevaRegiva'].submit();
+        }
+
+        // Hacer filas clickables
+        document.querySelectorAll('.clickableRow').forEach(row => {
+            row.style.cursor = 'pointer';
+            row.addEventListener('click', function() {
+                window.location = this.dataset.href;
+            });
+        });
+    </script>
+
+    {# Modal para marcar como presentado #}
+    {% if fsc.modeloFiscal and fsc.modeloFiscal.estado == 'borrador' %}
+        <div class="modal fade" id="modalMarcarPresentado" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="{{ fsc.url() }}?id={{ fsc.selectedRegiva.idregiva }}" method="post">
+                        <input type="hidden" name="proceso" value="marcar-presentado">
+                        <input type="hidden" name="idmodelo" value="{{ fsc.modeloFiscal.idmodelo }}">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="fa-solid fa-check fa-fw"></i> {{ i18n.trans('marcar-presentado') }}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="numeroreferencia" class="form-label">{{ i18n.trans('numero-referencia-atc') }}</label>
+                                <input type="text" name="numeroreferencia" id="numeroreferencia" class="form-control" placeholder="Opcional">
+                            </div>
+                            <div class="mb-3">
+                                <label for="fechapresentacion" class="form-label">{{ i18n.trans('fecha-presentacion') }}</label>
+                                <input type="date" name="fechapresentacion" id="fechapresentacion" class="form-control" value="{{ "now"|date("Y-m-d") }}">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ i18n.trans('cancelar') }}</button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fa-solid fa-check fa-fw"></i> {{ i18n.trans('marcar-presentado') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {# Modal para crear rectificativo #}
+    {% if fsc.modeloFiscal and fsc.modeloFiscal.estado == 'presentado' %}
+        <div class="modal fade" id="modalCrearRectificativo" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="{{ fsc.url() }}?id={{ fsc.selectedRegiva.idregiva }}" method="post">
+                        <input type="hidden" name="proceso" value="crear-rectificativo">
+                        <input type="hidden" name="idmodelo" value="{{ fsc.modeloFiscal.idmodelo }}">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="fa-solid fa-edit fa-fw"></i> {{ i18n.trans('crear-rectificativo') }}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-warning">
+                                <i class="fa-solid fa-exclamation-triangle fa-fw"></i>
+                                {{ i18n.trans('aviso-crear-rectificativo') }}
+                            </div>
+                            <p>{{ i18n.trans('confirmar-crear-rectificativo') }}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ i18n.trans('cancelar') }}</button>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fa-solid fa-edit fa-fw"></i> {{ i18n.trans('crear-rectificativo') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view>
+    <columns>
+        <column name="codigo" display="left" order="10">
+            <widget type="text" fieldname="codigo" />
+        </column>
+        <column name="fecha" display="center" order="20">
+            <widget type="date" fieldname="fecha" />
+        </column>
+        <column name="cifnif" display="left" order="30">
+            <widget type="text" fieldname="cifnif" />
+        </column>
+        <column name="nombre" display="left" order="40">
+            <widget type="text" fieldname="nombre" />
+        </column>
+        <column name="neto" display="right" order="50">
+            <widget type="money" fieldname="neto" />
+        </column>
+        <column name="igic" display="right" order="60">
+            <widget type="money" fieldname="totaligic" />
+        </column>
+        <column name="recargo" display="right" order="70">
+            <widget type="money" fieldname="totalrecargo" />
+        </column>
+        <column name="incluida" display="center" order="80">
+            <widget type="checkbox" fieldname="incluida" />
+        </column>
+    </columns>
+</view>

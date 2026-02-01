@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view>
+    <columns>
+        <column name="tipo" display="left" order="10">
+            <widget type="text" fieldname="tipo" onclick="EditModeloFiscal" />
+        </column>
+        <column name="periodo" display="left" order="20">
+            <widget type="text" fieldname="periodo" />
+        </column>
+        <column name="ejercicio" display="left" order="30">
+            <widget type="text" fieldname="codejercicio" />
+        </column>
+        <column name="desde" display="none" order="40">
+            <widget type="date" fieldname="fechainicio" />
+        </column>
+        <column name="hasta" display="none" order="50">
+            <widget type="date" fieldname="fechafin" />
+        </column>
+        <column name="total-devengado" display="right" order="60">
+            <widget type="money" fieldname="totaldevengado" />
+        </column>
+        <column name="total-deducible" display="right" order="70">
+            <widget type="money" fieldname="totaldeducible" />
+        </column>
+        <column name="resultado" display="right" order="80">
+            <widget type="money" fieldname="resultado" />
+        </column>
+        <column name="estado" display="center" order="90">
+            <widget type="text" fieldname="estado" />
+        </column>
+        <column name="numero-referencia-atc" display="left" order="100">
+            <widget type="text" fieldname="numeroreferencia" />
+        </column>
+        <column name="fecha-presentacion" display="center" order="110">
+            <widget type="date" fieldname="fechapresentacion" />
+        </column>
+        <column name="modelo-original" display="none" order="120">
+            <widget type="text" fieldname="idrectifica" />
+        </column>
+    </columns>
+</view>
